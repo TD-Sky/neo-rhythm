@@ -1,8 +1,21 @@
----@class HourMin: { [integer]: number }
+---@class HourMin
+---@field [1] number The inclusive start of range
+---@field [2] number The exclusive end of range
 
 ---@class Range<T>: { [string]: T }
 ---@field start type The inclusive start of range
 ---@field ending type The exclusive end of range
+
+---@class BgColorScheme
+---@field [1] string | fun() The colorscheme
+---@field bg "light" | "dark" The background of colorscheme
+
+---@alias ColorScheme string | fun() | BgColorScheme
+
+---@class Config
+---@field range Range<HourMin> The time range of day mode
+---@field day? ColorScheme The colorscheme at day
+---@field night? ColorScheme The colorscheme at night
 
 local M = {}
 
@@ -18,18 +31,48 @@ local function hm_to_number(hm)
     return hm[1] * 100 + hm[2]
 end
 
----@param opts Range<HourMin>
+---@param cls string | fun()
+local function set_colorscheme(cls)
+    local cls_t = type(cls)
+
+    if cls_t == "string" then
+        vim.cmd.colorscheme(cls)
+    elseif cls_t == "function" then
+        cls()
+    else
+        error("type error: not `string | func()`")
+    end
+end
+
+---@param bg string
+---@param cls ColorScheme | nil
+local function set_appearance(bg, cls)
+    if cls then
+        if type(cls) == "table" then
+            vim.o.background = cls.bg
+            set_colorscheme(cls[1])
+        else
+            vim.o.background = bg
+            set_colorscheme(cls --[[@as string | fun()]])
+        end
+    else
+        vim.o.background = bg
+    end
+end
+
+---@param opts Config
 function M.setup(opts)
-    if not validate_hour_min(opts.start) or not validate_hour_min(opts.ending) then
+    local range = opts.range
+
+    if not validate_hour_min(range.start) or not validate_hour_min(range.ending) then
         return
     end
 
     local now = tonumber(os.date("%H%M"))
-
-    if hm_to_number(opts.start) <= now and now < hm_to_number(opts.ending) then
-        vim.o.background = "light"
+    if hm_to_number(range.start) <= now and now < hm_to_number(range.ending) then
+        set_appearance("light", opts.day)
     else
-        vim.o.background = "dark"
+        set_appearance("dark", opts.night)
     end
 end
 
