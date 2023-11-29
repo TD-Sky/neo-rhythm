@@ -7,7 +7,7 @@
 ---@field ending type The exclusive end of range
 
 ---@class BgColorScheme
----@field [1] string | fun() The colorscheme
+---@field [1]? string | fun() The colorscheme
 ---@field bg "light" | "dark" The background of colorscheme
 
 ---@alias ColorScheme string | fun() | BgColorScheme
@@ -47,10 +47,12 @@ end
 ---@param bg string
 ---@param cls ColorScheme | nil
 local function set_appearance(bg, cls)
-    if cls then
+    if cls ~= nil then
         if type(cls) == "table" then
             vim.o.background = cls.bg
-            set_colorscheme(cls[1])
+            if cls[1] ~= nil then
+                set_colorscheme(cls[1])
+            end
         else
             vim.o.background = bg
             set_colorscheme(cls --[[@as string | fun()]])

@@ -61,6 +61,7 @@ The fields `day` and `night` can be one of the following types:
 - `string`: The colorscheme **name**.
 - `function`: **How to** set the colorscheme.
 - `{ string|function, bg = "light" | "dark" }`: Setting **colorscheme** with **background**.
+- `{ bg = "light" | "dark" }`: Setting **background** only.
 
 
 
